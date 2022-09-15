@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Mensaje - Inicio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
+    <link href="styles/style.css" rel="stylesheet" />
+    script(src="static/socket.io/client-dist/socket.io.js")
+    script(src="static/qrcode/build/qrcode.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js")
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Enviar Mensaje #{user} </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+            </div>
+        </div>
+    </nav>
+    <main class="container-fluid bg-light">
+        <div class="row">
+            <div class="mb-3 col-md-2">
+                <label for="numberMessage" class="form-label fs-6 text-truncate">Num. mensajes</label>
+                <input type="text" class="form-control form-control-sm" value="20" id="numberMessage" name="numberMessage" />
+            </div>
+            <div class="mb-3 col-md-2">
+                <label for="timeSleep" class="form-label fs-6 text-truncate">Tiempo envio(seg)</label>
+                <input type="text" class="form-control form-control-sm" value="10" id="timeSleep" name="timeSleep" />
+            </div>
+            <div class="mb-3 col-md-2">
+                <label for="timeSendMessage" class="form-label fs-6 text-truncate">Tiempo espera entre mensaje(seg)</label>
+                <input type="text" class="form-control form-control-sm" value="5" id="timeSendMessage" name="timeSendMessage" />
+            </div>
+            <div class="mb-3 col-md-2">
+                <label for="timeSleepEveryMessage" class="form-label fs-6 text-truncate">Tiempo envio mensaje(seg)</label>
+                <input type="text" class="form-control form-control-sm" value="5" id="timeSleepEveryMessage" name="timeSleepEveryMessage" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="mb-3 col-md-8">
+                <label for="message" class="form-label fs-6 text-truncate">Mensaje</label>
+                <textarea rows=11 name="message" id="message" class='form-control form-control-sm'></textarea>
+            </div>
+            <div class="mb-3 col-md-4">
+                <label for="param1" class="form-label fs-6 text-truncate">Parametro1 ({param1})</label>
+                <input type="text" class="form-control form-control-sm" id="param1" name="param1" />
+                <label for="param2" class="form-label fs-6 text-truncate">Parametro2 ({param2})</label>
+                <input type="text" class="form-control form-control-sm" id="param2" name="param2" />
+                <label for="param3" class="form-label fs-6 text-truncate">Parametro3 ({param3})</label>
+                <input type="text" class="form-control form-control-sm" id="param3" name="param3" />
+                <label for="param4" class="form-label fs-6 text-truncate">Parametro4 ({param4})</label>
+                <input type="text" class="form-control form-control-sm" id="param4" name="param4" />
+                <label for="param5" class="form-label fs-6 text-truncate">Parametro5 ({param5})</label>
+                <input type="text" class="form-control form-control-sm" id="param5" name="param5" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="mb-3 col-md-2"></div>
+            <div class="mb-3 col-md-4">
+                <label for="contact" class="form-label fs-6 text-truncate">Contactos</label>
+                <input type="file" class="form-control form-control-sm" id="contact" name="contact" />
+            </div>
+            <div class="mb-3 col-md-2">
+                <label for="notification" class="form-label fs-6 text-truncate">Celular Notificacion</label>
+                <input type="text" class="form-control form-control-sm" id="notification" name="notification" />
+            </div>
+            <div class="mb-3 col-md-2">
+                <button class="btn btn-primary mb-3 col-md-12 mt-4" onclick="connect()">ENVIAR</button>
+            </div>
+            <div class="mb-3 col-md-2"></div>
+        </div>
+        <div class="modal" tabindex="-1" id="modalQR">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-body text-center" id="data">
+                        <img id="qr" heigth="400" width="400"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+script.
+    let connect = () => {
+        const socket = io('ws://localhost:8081');
+        const myModal = new bootstrap.Modal(document.getElementById('modalQR'))
+        socket.on('qr', function (data) {
+            
+            QRCode.toDataURL(data, { errorCorrectionLevel: 'H' }, function (error, url) {
+                var img = document.getElementById('qr')
+                img.src = url
+            })
+            myModal.show()
+        })
+
+        socket.on('status', function (data) {
+            let div = document.getElementById("data");
+            div.innerHTML = "";
+            div.innerHTML = "<span>" + data + "</span>"
+        })
+
+        socket.on('ready', function (data) {
+            let valido = true;
+            let obj = {}
+            obj.numberMessage = document.getElementById("numberMessage").value;
+            obj.timeSleep = document.getElementById("timeSleep").value;
+            obj.timeSendMessage = document.getElementById("timeSendMessage").value;
+            obj.timeSleepEveryMessage = document.getElementById("timeSleepEveryMessage").value;
+            obj.message = document.getElementById("message").value;
+            obj.param1 = document.getElementById("param1").value.split(",");
+            obj.param2 = document.getElementById("param2").value.split(",");
+            obj.param3 = document.getElementById("param3").value.split(",");
+            obj.param4 = document.getElementById("param4").value.split(",");
+            obj.param5 = document.getElementById("param5").value.split(",");
+            obj.notification = document.getElementById("notification").value;
+            let contacts = document.getElementById("contact")
+            if(!contacts.files[0]) valido=false
+            if(obj.message == "") valido=false
+            if(valido){
+                var reader = new FileReader();
+
+                // (B) ON FINISH LOADING
+                reader.addEventListener("loadend", (evt) => {
+                    // (B1) GET THE FIRST WORKSHEET
+                    var workbook = XLSX.read(evt.target.result, {type: "binary"}),
+                        worksheet = workbook.Sheets[workbook.SheetNames[0]],
+                        range = XLSX.utils.decode_range(worksheet["!ref"]);
+
+                    // (B2) READ CELLS IN ARRAY
+                    var data = [];
+                    for (let row=range.s.r; row<=range.e.r; row++) {
+                        let i = data.length;
+                        //data.push([]);
+                        for (let col=range.s.c; col<=range.e.c; col++) {
+                            let cell = worksheet[XLSX.utils.encode_cell({r:row, c:col})];
+                            data.push({number:cell.v});
+                        }
+                    }
+                    obj.contacts = data;
+                    console.log(data);
+                    socket.emit('send', obj);
+                });
+
+                // (C) START - READ SELECTED EXCEL FILE
+                reader.readAsArrayBuffer(contacts.files[0]);
+
+                let div = document.getElementById("data");
+                div.innerHTML = "";
+                div.innerHTML = "<span>CONECTADO...</span>"
+            }else{
+                alert("REVISAR DATOS")
+                 myModal.hide()
+            }
+            
+        })
+    }
+
+</html>
