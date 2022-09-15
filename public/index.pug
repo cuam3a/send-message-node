@@ -90,7 +90,7 @@
 </body>
 script.
     let connect = () => {
-        const socket = io('ws://localhost:8081');
+        const socket = io('ws://send-message-node.vercel.app:8081');
         const myModal = new bootstrap.Modal(document.getElementById('modalQR'))
         socket.on('qr', function (data) {
             
